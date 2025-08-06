@@ -130,3 +130,5 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # URL de la API para obtener datos externos
 API_URL = 'https://jsonplaceholder.typicode.com/posts'
+
+LANDING_API_URL = 'http://cmaciasm.pythonanywhere.com/'
