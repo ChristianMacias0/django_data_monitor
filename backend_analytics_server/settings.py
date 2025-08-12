@@ -132,3 +132,9 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 API_URL = 'https://jsonplaceholder.typicode.com/posts'
 
 LANDING_API_URL = 'http://cmaciasm.pythonanywhere.com/'
+
+# Fallo: acceso sin autenticación
+LOGIN_URL = '/login/'
+
+# Éxito: luego de autenticación exitosa
+LOGIN_REDIRECT_URL = '/'
