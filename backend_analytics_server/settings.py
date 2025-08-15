@@ -7,29 +7,30 @@ import dj_database_url
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-# --- CONFIGURACIÓN DE SEGURIDAD ---
+## --- CONFIGURACIÓN DE SEGURIDAD FINAL ---
 SECRET_KEY = os.environ.get(
     'DJANGO_SECRET_KEY',
     'django-insecure-_ff2#2pi^f7c^o9n$z($t4-b8^1l_n=&tf26g-r6v%7_ov@ft('
 )
 
-# DEBUG es True localmente, False en producción (Railway)
-DEBUG = os.environ.get('DEBUG', 'False').lower() == 'true'
+# DEBUG es False si la variable de entorno IS_PRODUCTION es 'True'
+IS_PRODUCTION = os.environ.get('IS_PRODUCTION', 'False').lower() == 'true'
+DEBUG = not IS_PRODUCTION
 
-# --- CONFIGURACIÓN DE HOSTS ---
+# Lista de hosts permitidos
 ALLOWED_HOSTS = []
-CSRF_TRUSTED_ORIGINS = []
 
-# Railway proporciona el dominio público en esta variable.
 RAILWAY_PUBLIC_DOMAIN = os.environ.get('RAILWAY_PUBLIC_DOMAIN')
-if RAILWAY_PUBLIC_DOMAIN:
+if IS_PRODUCTION and RAILWAY_PUBLIC_DOMAIN:
     ALLOWED_HOSTS.append(f".{RAILWAY_PUBLIC_DOMAIN}")
-    CSRF_TRUSTED_ORIGINS.append(f"https://{RAILWAY_PUBLIC_DOMAIN}")
+else:
+    ALLOWED_HOSTS.extend(['127.0.0.1', 'localhost'])
 
-# Permite localhost si estamos en desarrollo
-if DEBUG:
-    ALLOWED_HOSTS.append('localhost')
-    ALLOWED_HOSTS.append('127.0.0.1')
+
+# --- CSRF ---
+CSRF_TRUSTED_ORIGINS = []
+if IS_PRODUCTION and RAILWAY_PUBLIC_DOMAIN:
+    CSRF_TRUSTED_ORIGINS.append(f"https{RAILWAY_PUBLIC_DOMAIN}")
 
 
 # Application definition
@@ -92,7 +93,21 @@ else:
 
 
 # Password validation
-AUTH_PASSWORD_VALIDATORS = [...] # Mantén esta sección como estaba
+AUTH_PASSWORD_VALIDATORS = [
+    {
+        'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
+    },
+    {
+        'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',
+    },
+    {
+        'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator',
+    },
+    {
+        'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
+    },
+]
+
 
 # Internationalization
 LANGUAGE_CODE = 'es-ec'
