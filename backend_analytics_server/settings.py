@@ -50,7 +50,6 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'dashboard',
-    'security', # <-- Asegúrate de que tu app 'security' esté registrada
 ]
 
 MIDDLEWARE = [
