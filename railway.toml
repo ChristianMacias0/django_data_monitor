@@ -1,9 +1,0 @@
-[build]
-builder = "NIXPACKS"
-
-[deploy]
-# --- CAMBIO IMPORTANTE: Quitamos --bind y usamos una variable de entorno ---
-startCommand = "gunicorn backend_analytics_server.wsgi --log-file -"
-# Railway usará la variable de entorno PORT por defecto
-healthcheckPath = "/health/"
-healthcheckTimeout = 120

@@ -1,53 +1,45 @@
-"""
-Django settings for backend_analytics_server project.
-"""
+# backend_analytics_server/settings.py
 
-from pathlib import Path
 import os
+from pathlib import Path
+import dj_database_url
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-
-# --- CONFIGURACIÓN DE SEGURIDAD PARA PRODUCCIÓN ---
-
-# 1. Carga la SECRET_KEY desde las variables de entorno.
-#    Es crucial para la seguridad en producción.
+# --- CONFIGURACIÓN DE SEGURIDAD ---
 SECRET_KEY = os.environ.get(
     'DJANGO_SECRET_KEY',
-    'django-insecure-_ff2#2pi^f7c^o9n$z($t4-b8^1l_n=&tf26g-r6v%7_ov@ft(' # Clave por defecto solo para desarrollo local
+    'django-insecure-_ff2#2pi^f7c^o9n$z($t4-b8^1l_n=&tf26g-r6v%7_ov@ft('
 )
 
-# 2. DEBUG se establece en False automáticamente en producción.
-#    En Railway, la variable DEBUG no estará configurada como 'True', por lo que será False.
+# DEBUG es True localmente, False en producción (Railway)
 DEBUG = os.environ.get('DEBUG', 'False').lower() == 'true'
 
-# 3. Lógica robusta para ALLOWED_HOSTS y CSRF_TRUSTED_ORIGINS.
-#    Esto soluciona cualquier 'IndexError' o problema de health check.
+# --- CONFIGURACIÓN DE HOSTS ---
 ALLOWED_HOSTS = []
 CSRF_TRUSTED_ORIGINS = []
 
 # Railway proporciona el dominio público en esta variable.
 RAILWAY_PUBLIC_DOMAIN = os.environ.get('RAILWAY_PUBLIC_DOMAIN')
-
-# SOLO añadimos los hosts si estamos en un entorno de despliegue (es decir, la variable existe)
 if RAILWAY_PUBLIC_DOMAIN:
     ALLOWED_HOSTS.append(f".{RAILWAY_PUBLIC_DOMAIN}")
     CSRF_TRUSTED_ORIGINS.append(f"https://{RAILWAY_PUBLIC_DOMAIN}")
-else:
-    # Si no, asumimos que estamos en desarrollo local
-    ALLOWED_HOSTS.extend(['127.0.0.1', 'localhost'])
+
+# Permite localhost si estamos en desarrollo
+if DEBUG:
+    ALLOWED_HOSTS.append('localhost')
+    ALLOWED_HOSTS.append('127.0.0.1')
 
 
 # Application definition
-
 INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
-    'whitenoise.runserver_nostatic', # Para que WhiteNoise funcione en desarrollo con DEBUG=False
+    'whitenoise.runserver_nostatic',
     'django.contrib.staticfiles',
     'dashboard',
     'security',
@@ -55,7 +47,7 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
-    'whitenoise.middleware.WhiteNoiseMiddleware', # WhiteNoise para servir estáticos
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -84,18 +76,24 @@ TEMPLATES = [
 WSGI_APPLICATION = 'backend_analytics_server.wsgi.application'
 
 
-# Database
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+# --- CONFIGURACIÓN DE BASE DE DATOS ---
+# Usa la base de datos de Railway si está disponible, si no, usa SQLite local.
+DATABASE_URL = os.environ.get('DATABASE_URL')
+if DATABASE_URL:
+    DATABASES = {
+        'default': dj_database_url.config(conn_max_age=600, ssl_require=False)
     }
-}
+else:
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': BASE_DIR / 'db.sqlite3',
+        }
+    }
 
 
 # Password validation
-AUTH_PASSWORD_VALIDATORS = [...]
-
+AUTH_PASSWORD_VALIDATORS = [...] # Mantén esta sección como estaba
 
 # Internationalization
 LANGUAGE_CODE = 'es-ec'
@@ -104,11 +102,9 @@ USE_I18N = True
 USE_TZ = True
 
 
-# Static files (CSS, JavaScript, Images)
+# --- CONFIGURACIÓN DE ARCHIVOS ESTÁTICOS ---
 STATIC_URL = 'static/'
-STATICFILES_DIRS = [
-    os.path.join(BASE_DIR, 'static'),
-]
+STATICFILES_DIRS = [os.path.join(BASE_DIR, 'static')]
 STATIC_ROOT = BASE_DIR / 'staticfiles'
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
