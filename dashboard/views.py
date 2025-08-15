@@ -76,10 +76,8 @@ def index(request):
 
 
 
-
-    def health_check(request):
+def health_check(request):
     """
-    Vista simple para la revisión de salud de Railway.
-    No requiere autenticación y siempre devuelve 200 OK.
+    Vista simple que siempre devuelve 200 OK para el health check de Railway.
     """
     return HttpResponse("OK", status=200)
