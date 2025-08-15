@@ -2,22 +2,17 @@
 
 from django.contrib import admin
 from django.urls import path, include
-from django.contrib.auth import views as auth_views
-
-# --- AÑADIMOS ESTAS IMPORTACIONES ---
-from dashboard.views import index as dashboard_index
 from dashboard.views import health_check
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-
-    # --- RUTA PRINCIPAL EXPLÍCITA ---
-    path('', dashboard_index, name='dashboard'),
-
-    # --- RUTA DE SALUD ---
     path('health/', health_check, name='health_check'),
 
-    # --- RUTAS DE AUTENTICACIÓN ---
-    path('accounts/login/', auth_views.LoginView.as_view(template_name='security/login.html'), name='login'),
+    # --- CAMBIO IMPORTANTE: Usamos include para las URLs de autenticación ---
+    # Esto es más robusto. Django buscará 'accounts/login/', 'accounts/logout/', etc.
     path('accounts/', include('django.contrib.auth.urls')),
+    
+    # --- CAMBIO IMPORTANTE: Incluimos la app del dashboard ---
+    # La ruta raíz ahora es manejada por dashboard.urls
+    path('', include('dashboard.urls')),
 ]
