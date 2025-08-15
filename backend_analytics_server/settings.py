@@ -1,37 +1,43 @@
-# backend_analytics_server/settings.py
+"""
+Django settings for backend_analytics_server project.
+"""
 
-import os
 from pathlib import Path
+import os
 import dj_database_url
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-## --- CONFIGURACIÓN DE SEGURIDAD FINAL ---
+# --- CONFIGURACIÓN DE SEGURIDAD PARA PRODUCCIÓN Y DESARROLLO ---
+
+# Carga la SECRET_KEY de forma segura.
 SECRET_KEY = os.environ.get(
     'DJANGO_SECRET_KEY',
     'django-insecure-_ff2#2pi^f7c^o9n$z($t4-b8^1l_n=&tf26g-r6v%7_ov@ft('
 )
 
-# DEBUG es False si la variable de entorno IS_PRODUCTION es 'True'
-IS_PRODUCTION = os.environ.get('IS_PRODUCTION', 'False').lower() == 'true'
-DEBUG = not IS_PRODUCTION
+# DEBUG es True solo si la variable de entorno DEBUG se establece en 'True'.
+# En Railway, no la estableceremos, por lo que será False.
+DEBUG = os.environ.get('DEBUG', 'False').lower() == 'true'
 
-# Lista de hosts permitidos
+# --- LÓGICA ROBUSTA PARA ALLOWED_HOSTS ---
 ALLOWED_HOSTS = []
-
-RAILWAY_PUBLIC_DOMAIN = os.environ.get('RAILWAY_PUBLIC_DOMAIN')
-if IS_PRODUCTION and RAILWAY_PUBLIC_DOMAIN:
-    ALLOWED_HOSTS.append(f".{RAILWAY_PUBLIC_DOMAIN}")
-else:
-    ALLOWED_HOSTS.extend(['127.0.0.1', 'localhost'])
-
-
-# --- CSRF ---
 CSRF_TRUSTED_ORIGINS = []
-if IS_PRODUCTION and RAILWAY_PUBLIC_DOMAIN:
-    CSRF_TRUSTED_ORIGINS.append(f"https{RAILWAY_PUBLIC_DOMAIN}")
 
+# Railway proporciona el dominio público en esta variable.
+# Si existe, estamos en producción.
+RAILWAY_PUBLIC_DOMAIN = os.environ.get('RAILWAY_PUBLIC_DOMAIN')
+if RAILWAY_PUBLIC_DOMAIN:
+    ALLOWED_HOSTS.append(f".{RAILWAY_PUBLIC_DOMAIN}")
+    CSRF_TRUSTED_ORIGINS.append(f"https://{RAILWAY_PUBLIC_DOMAIN}")
+    # Asegúrate de que DEBUG sea False en producción
+    DEBUG = False 
+else:
+    # Si no, estamos en desarrollo local.
+    ALLOWED_HOSTS.extend(['127.0.0.1', 'localhost'])
+    # DEBUG será True localmente si no hay variable de entorno DEBUG=False
+    DEBUG = os.environ.get('DEBUG', 'True').lower() == 'true'
 
 # Application definition
 INSTALLED_APPS = [
@@ -43,6 +49,7 @@ INSTALLED_APPS = [
     'whitenoise.runserver_nostatic',
     'django.contrib.staticfiles',
     'dashboard',
+    'security',
 ]
 
 MIDDLEWARE = [
@@ -75,14 +82,10 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'backend_analytics_server.wsgi.application'
 
-
 # --- CONFIGURACIÓN DE BASE DE DATOS ---
-# Usa la base de datos de Railway si está disponible, si no, usa SQLite local.
 DATABASE_URL = os.environ.get('DATABASE_URL')
 if DATABASE_URL:
-    DATABASES = {
-        'default': dj_database_url.config(conn_max_age=600, ssl_require=False)
-    }
+    DATABASES = {'default': dj_database_url.config(conn_max_age=600)}
 else:
     DATABASES = {
         'default': {
@@ -91,45 +94,29 @@ else:
         }
     }
 
-
-# Password validation
+# --- VALIDACIÓN DE CONTRASEÑAS ---
 AUTH_PASSWORD_VALIDATORS = [
-    {
-        'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
-    },
-    {
-        'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',
-    },
-    {
-        'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator',
-    },
-    {
-        'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
-    },
+    {'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator'},
+    {'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator'},
+    {'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator'},
+    {'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator'},
 ]
 
-
-# Internationalization
+# --- INTERNACIONALIZACIÓN ---
 LANGUAGE_CODE = 'es-ec'
 TIME_ZONE = 'America/Guayaquil'
 USE_I18N = True
 USE_TZ = True
 
-
-# --- CONFIGURACIÓN DE ARCHIVOS ESTÁTICOS ---
+# --- ARCHIVOS ESTÁTICOS ---
 STATIC_URL = 'static/'
 STATICFILES_DIRS = [os.path.join(BASE_DIR, 'static')]
 STATIC_ROOT = BASE_DIR / 'staticfiles'
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
-
-# Default primary key field type
+# --- OTROS ---
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
-
-# URL de la API para obtener datos externos
 LANDING_API_URL = 'http://cmaciasm.pythonanywhere.com/'
-
-# --- CONFIGURACIÓN DE AUTENTICACIÓN ---
 LOGIN_URL = '/accounts/login/'
 LOGIN_REDIRECT_URL = '/'
 LOGOUT_REDIRECT_URL = '/accounts/login/'
