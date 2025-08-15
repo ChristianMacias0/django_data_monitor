@@ -28,6 +28,13 @@ DEBUG = True
 
 ALLOWED_HOSTS = []
 
+RAILWAY_HOSTNAME = os.environ.get('RAILWAY_STATIC_URL')
+if RAILWAY_HOSTNAME:
+    ALLOWED_HOSTS.append(RAILWAY_HOSTNAME.split('//')[1]) # Quitamos el https://
+
+# También es bueno añadir el host local para pruebas
+ALLOWED_HOSTS.append('127.0.0.1')
+
 
 # Application definition
 

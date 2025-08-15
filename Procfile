@@ -1,1 +1,1 @@
-web: gunicorn backend_analytics_server.wsgi --log-file -
+web: gunicorn backend_analytics_server.wsgi --log-file - --bind 0.0.0.0:$PORT
