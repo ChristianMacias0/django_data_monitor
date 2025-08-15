@@ -13,10 +13,8 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 # 1. Carga la SECRET_KEY desde las variables de entorno.
 #    Es crucial para la seguridad en producción.
-SECRET_KEY = os.environ.get(
-    'DJANGO_SECRET_KEY',
-    'django-insecure-_ff2#2pi^f7c^o9n$z($t4-b8^1l_n=&tf26g-r6v%7_ov@ft(' # Clave por defecto solo para desarrollo local
-)
+
+SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY', 'django-insecure-_ff2#2pi^f7c^o9n$z($t4-b8^1l_n=&tf26g-r6v%7_ov@ft(')
 
 # 2. DEBUG se establece en False automáticamente en producción.
 #    En Railway, la variable DEBUG no estará configurada como 'True', por lo que será False.
@@ -27,17 +25,16 @@ DEBUG = os.environ.get('DEBUG', 'False').lower() == 'true'
 ALLOWED_HOSTS = []
 CSRF_TRUSTED_ORIGINS = []
 
-RAILWAY_STATIC_URL = os.environ.get('RAILWAY_STATIC_URL')
-if RAILWAY_STATIC_URL:
-    # Obtiene el hostname sin 'https://' para añadirlo a las listas
-    hostname = RAILWAY_STATIC_URL.replace('https://', '').split(':')[0]
-    ALLOWED_HOSTS.append(hostname)
-    CSRF_TRUSTED_ORIGINS.append(f"https://{hostname}")
+# Railway proporciona el dominio público en esta variable.
+RAILWAY_PUBLIC_DOMAIN = os.environ.get('RAILWAY_PUBLIC_DOMAIN')
+if RAILWAY_PUBLIC_DOMAIN:
+    # Añadimos el dominio de Railway a las listas seguras.
+    ALLOWED_HOSTS.append(f".{RAILWAY_PUBLIC_DOMAIN}")
+    CSRF_TRUSTED_ORIGINS.append(f"https://{RAILWAY_PUBLIC_DOMAIN}")
 
-# Permite las pruebas locales si no estamos en Railway
-if not RAILWAY_STATIC_URL:
+# Permite el acceso local cuando se ejecuta en desarrollo
+if not DEBUG:
     ALLOWED_HOSTS.extend(['127.0.0.1', 'localhost'])
-    CSRF_TRUSTED_ORIGINS.extend(['http://127.0.0.1:8000', 'http://localhost:8000'])
 
 
 # Application definition
