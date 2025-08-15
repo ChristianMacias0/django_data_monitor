@@ -5,6 +5,7 @@ import json
 from django.conf import settings
 from django.shortcuts import render
 from django.contrib.auth.decorators import login_required
+from django.http import HttpResponse
 
 @login_required
 def index(request):
@@ -72,3 +73,13 @@ def index(request):
     }
 
     return render(request, 'dashboard/index.html', context)
+
+
+
+
+    def health_check(request):
+    """
+    Vista simple para la revisión de salud de Railway.
+    No requiere autenticación y siempre devuelve 200 OK.
+    """
+    return HttpResponse("OK", status=200)
