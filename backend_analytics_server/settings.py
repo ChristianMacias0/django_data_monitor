@@ -22,8 +22,8 @@ SECRET_KEY = os.environ.get(
 DEBUG = os.environ.get('DEBUG', 'False').lower() == 'true'
 
 # --- LÓGICA ROBUSTA PARA ALLOWED_HOSTS ---
-ALLOWED_HOSTS = ["https://dashboard-data-monitor.up.railway.app/"]
-CSRF_TRUSTED_ORIGINS = []
+ALLOWED_HOSTS = ["dashboard-data-monitor.up.railway.app"]
+CSRF_TRUSTED_ORIGINS = [f"https://{RAILWAY_PUBLIC_DOMAIN}"]
 
 # Railway proporciona el dominio público en esta variable.
 # Si existe, estamos en producción.
