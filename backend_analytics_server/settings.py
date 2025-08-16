@@ -23,11 +23,12 @@ DEBUG = os.environ.get('DEBUG', 'False').lower() == 'true'
 
 # --- LÓGICA ROBUSTA PARA ALLOWED_HOSTS ---
 ALLOWED_HOSTS = ["dashboard-data-monitor.up.railway.app"]
-CSRF_TRUSTED_ORIGINS = [f"https://{RAILWAY_PUBLIC_DOMAIN}"]
+
 
 # Railway proporciona el dominio público en esta variable.
 # Si existe, estamos en producción.
 RAILWAY_PUBLIC_DOMAIN = os.environ.get('RAILWAY_PUBLIC_DOMAIN')
+CSRF_TRUSTED_ORIGINS = [f"https://{RAILWAY_PUBLIC_DOMAIN}"]
 if RAILWAY_PUBLIC_DOMAIN:
     ALLOWED_HOSTS.append(f".{RAILWAY_PUBLIC_DOMAIN}")
     CSRF_TRUSTED_ORIGINS.append(f"https://{RAILWAY_PUBLIC_DOMAIN}")
