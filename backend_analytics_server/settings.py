@@ -26,7 +26,8 @@ SECRET_KEY = 'django-insecure-_ff2#2pi^f7c^o9n$z($t4-b8^1l_n=&tf26g-r6v%7_ov@ft(
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['*']
+CSRF_TRUSTED_ORIGINS = ["http://127.0.0.1:8000"]
 
 
 # Application definition
@@ -132,3 +133,9 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 API_URL = 'https://jsonplaceholder.typicode.com/posts'
 
 LANDING_API_URL = 'http://cmaciasm.pythonanywhere.com/'
+
+# Fallo: acceso sin autenticación
+LOGIN_URL = '/login/'
+
+# Éxito: luego de autenticación exitosa
+LOGIN_REDIRECT_URL = '/'
