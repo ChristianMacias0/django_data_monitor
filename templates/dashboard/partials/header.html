@@ -35,11 +35,10 @@
                 </button>
             </li>
             <!-- Profile menu -->
-            <li class="relative">
+            <li class="relative flex items-center">
                 {% if user.is_authenticated %}
-
-                <span>{{ user.username }}</span>
-
+                <!-- Muestra el nombre de usuario si está autenticado -->
+                <span class="mr-3 font-medium text-gray-600 dark:text-gray-400">{{ user.username }}</span>
                 {% endif %}
                 <button class="align-middle rounded-full focus:shadow-outline-purple focus:outline-none"
                     @click="toggleProfileMenu" @keydown.escape="closeProfileMenu" aria-label="Account"
@@ -59,10 +58,13 @@
                             <!-- START - Block Logout -->
 
                             <!-- Método post y action para el URL (con el alias 'logout') -->
+                            <!-- El class="w-full" es importante para que el formulario ocupe todo el espacio del <li> -->
                             <form method="post" action="{% url 'logout' %}" class="w-full">
 
                                 <!-- CSRF token -->
                                 {% csrf_token %}
+
+                                <!-- El botón de submit envía el formulario -->
                                 <button type="submit"
                                     class="inline-flex items-center w-full px-2 py-1 text-sm font-semibold transition-colors duration-150 rounded-md hover:bg-gray-100 hover:text-gray-800 dark:hover:bg-gray-800 dark:hover:text-gray-200">
                                     <svg class="w-4 h-4 mr-3" aria-hidden="true" fill="none" stroke-linecap="round"
