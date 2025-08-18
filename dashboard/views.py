@@ -4,10 +4,11 @@ import requests
 import json
 from django.conf import settings
 from django.shortcuts import render
-from django.contrib.auth.decorators import login_required
+from django.contrib.auth.decorators import login_required, permission_required
 from django.http import HttpResponse # Importa HttpResponse
 
 @login_required
+@permission_required('dashboard.index_viewer', raise_exception=True)
 def index(request):
     
     products = []
