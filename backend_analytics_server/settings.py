@@ -4,41 +4,29 @@ Django settings for backend_analytics_server project.
 
 from pathlib import Path
 import os
-import dj_database_url
+import pymysql
+
+pymysql.install_as_MySQLdb()
+
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-# --- CONFIGURACIÓN DE SEGURIDAD PARA PRODUCCIÓN Y DESARROLLO ---
-
-# Carga la SECRET_KEY de forma segura.
-SECRET_KEY = os.environ.get(
-    'DJANGO_SECRET_KEY',
-    'django-insecure-_ff2#2pi^f7c^o9n$z($t4-b8^1l_n=&tf26g-r6v%7_ov@ft('
-)
-
-# DEBUG es True solo si la variable de entorno DEBUG se establece en 'True'.
-# En Railway, no la estableceremos, por lo que será False.
-DEBUG = os.environ.get('DEBUG', 'False').lower() == 'true'
-
-# --- LÓGICA ROBUSTA PARA ALLOWED_HOSTS ---
-ALLOWED_HOSTS = ["dashboard-data-monitor.up.railway.app"]
 
 
-# Railway proporciona el dominio público en esta variable.
-# Si existe, estamos en producción.
-RAILWAY_PUBLIC_DOMAIN = os.environ.get('RAILWAY_PUBLIC_DOMAIN')
-CSRF_TRUSTED_ORIGINS = [f"https://{RAILWAY_PUBLIC_DOMAIN}"]
-if RAILWAY_PUBLIC_DOMAIN:
-    ALLOWED_HOSTS.append(f".{RAILWAY_PUBLIC_DOMAIN}")
-    CSRF_TRUSTED_ORIGINS.append(f"https://{RAILWAY_PUBLIC_DOMAIN}")
-    # Asegúrate de que DEBUG sea False en producción
-    DEBUG = False 
-else:
-    # Si no, estamos en desarrollo local.
-    ALLOWED_HOSTS.extend(['127.0.0.1', 'localhost'])
-    # DEBUG será True localmente si no hay variable de entorno DEBUG=False
-    DEBUG = os.environ.get('DEBUG', 'True').lower() == 'true'
+# Quick-start development settings - unsuitable for production
+# See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
+
+# SECURITY WARNING: keep the secret key used in production secret!
+SECRET_KEY = 'django-insecure-_ff2#2pi^f7c^o9n$z($t4-b8^1l_n=&tf26g-r6v%7_ov@ft('
+
+# SECURITY WARNING: don't run with debug turned on in production!
+DEBUG = False
+
+ALLOWED_HOSTS = ['.up.railway.app','127.0.0.1']
+CSRF_TRUSTED_ORIGINS = ["https://*.up.railway.app"
+    ]
+
 
 # Application definition
 INSTALLED_APPS = [
@@ -82,17 +70,24 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'backend_analytics_server.wsgi.application'
 
-# --- CONFIGURACIÓN DE BASE DE DATOS ---
-DATABASE_URL = os.environ.get('DATABASE_URL')
-if DATABASE_URL:
-    DATABASES = {'default': dj_database_url.config(conn_max_age=600)}
-else:
-    DATABASES = {
-        'default': {
-            'ENGINE': 'django.db.backends.sqlite3',
-            'NAME': BASE_DIR / 'db.sqlite3',
-        }
+
+
+# Database
+# https://docs.djangoproject.com/en/5.2/ref/settings/#databases
+
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.mysql',
+        'NAME': os.environ.get('MYSQLDATABASE'),
+        'USER': os.environ.get('MYSQLUSER'),
+        'PASSWORD': os.environ.get('MYSQLPASSWORD'),
+        'HOST': os.environ.get('MYSQLHOST'),
+        'PORT': os.environ.get('MYSQLPORT'),
     }
+}
+
+# Password validation
+# https://docs.djangoproject.com/en/5.2/ref/settings/#auth-password-validators
 
 # --- VALIDACIÓN DE CONTRASEÑAS ---
 AUTH_PASSWORD_VALIDATORS = [
@@ -114,9 +109,28 @@ STATICFILES_DIRS = [os.path.join(BASE_DIR, 'static')]
 STATIC_ROOT = BASE_DIR / 'staticfiles'
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
-# --- OTROS ---
+STATICFILES_DIRS = [
+    os.path.join(BASE_DIR, 'static'),
+]
+
+STATIC_ROOT = BASE_DIR / 'assets'
+
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+
+
+# Default primary key field type
+# https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
+
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+# URL de la API para obtener datos externos
+API_URL = 'https://jsonplaceholder.typicode.com/posts'
+
 LANDING_API_URL = 'http://cmaciasm.pythonanywhere.com/'
-LOGIN_URL = '/accounts/login/'
+
+# Fallo: acceso sin autenticación
+LOGIN_URL = '/login/'
+
+# Éxito: luego de autenticación exitosa
 LOGIN_REDIRECT_URL = '/'
-LOGOUT_REDIRECT_URL = '/accounts/login/'
+
