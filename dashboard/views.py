@@ -4,6 +4,7 @@ import json
 from django.conf import settings
 from django.shortcuts import render
 from django.contrib.auth.decorators import login_required
+
 from django.contrib.auth.decorators import login_required, permission_required
 from django.conf import settings 
 from django.shortcuts import render 
@@ -11,6 +12,7 @@ from django.contrib.auth.decorators import login_required, permission_required
 
 @login_required
 @permission_required('dashboard.index_viewer', raise_exception=True)
+
 def index(request):
     
     products = []
@@ -21,8 +23,9 @@ def index(request):
     error = None
 
     try:
-        response = requests.get(settings.LANDING_API_URL)
-        response.raise_for_status()
+        # Hacemos la solicitud con un timeout para evitar que se quede colgada
+        response = requests.get(settings.LANDING_API_URL, timeout=10) # 10 segundos de espera
+        response.raise_for_status() # Lanza un error si el código no es 2xx
         
         products_raw = response.json()
 
@@ -30,45 +33,43 @@ def index(request):
         for p in products_raw:
             products.append({
                 'product_name': p.get('product_name', 'N/A'),
-                'view_count': int(p.get('view_count', 0) / 2)
+                'view_count': int(p.get('view_count', 0)) # No dividimos aquí para simplificar
             })
         
         if products:
-            # Los cálculos de los indicadores y la tabla usan la lista completa de productos
             total_products = len(products)
             total_views = sum(p['view_count'] for p in products)
             most_viewed = max(products, key=lambda x: x['view_count'])
             least_viewed = min(products, key=lambda x: x['view_count'])
 
     except requests.exceptions.RequestException as e:
-        error = f"Error al conectar con la API: {e}"
+        # Si la API no responde o hay un error de red, lo capturamos y lo mostramos
+        error = f"No se pudo conectar con la API de productos en {settings.LANDING_API_URL}. Detalles: {e}"
     except (ValueError, KeyError) as e:
-        error = f"Error al procesar los datos de la API: {e}"
+        # Si el JSON está mal formado o faltan claves
+        error = f"Error al procesar los datos de la API. Detalles: {e}"
 
-    # --- NUEVA LÓGICA: PREPARAR DATOS SOLO PARA EL GRÁFICO ---
-
-    # 1. Ordenar la lista de productos de mayor a menor número de vistas
-    #    Usamos sorted() para crear una nueva lista ordenada sin modificar la original.
+    # Lógica del gráfico (ahora es segura incluso si 'products' está vacía)
     sorted_products = sorted(products, key=lambda x: x['view_count'], reverse=True)
-    
-    # 2. Limitar la lista a los primeros 5 productos (los más vistos)
     top_5_products = sorted_products[:5]
-
-    # 3. Preparar las etiquetas y datos para el gráfico a partir de la lista de los 5 mejores
     chart_labels = [p['product_name'] for p in top_5_products]
     chart_data = [p['view_count'] for p in top_5_products]
     
-    # Creamos el diccionario de contexto con todos los datos
     context = {
         'title': "Dashboard de Vistas de Productos",
-        'products': products, # La tabla usa la lista completa
+        'products': products,
         'total_products': total_products,
         'total_views': total_views,
         'most_viewed': most_viewed,
         'least_viewed': least_viewed,
-        'error': error,
-        'chart_labels_json': json.dumps(chart_labels), # Ahora solo contiene los 5 mejores
-        'chart_data_json': json.dumps(chart_data),     # Ahora solo contiene sus datos
+        'error': error, # Pasamos el mensaje de error a la plantilla
+        'chart_labels_json': json.dumps(chart_labels),
+        'chart_data_json': json.dumps(chart_data),
     }
 
     return render(request, 'dashboard/index.html', context)
+
+
+# Vista de Health Check
+def health_check(request):
+    return HttpResponse("OK", status=200)
