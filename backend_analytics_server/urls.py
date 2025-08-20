@@ -7,7 +7,6 @@ from django.contrib.auth import views as auth_views
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('health/', health_check, name='health_check'),
 
     # --- CONFIGURACIÓN DE AUTENTICACIÓN EXPLÍCITA ---
     
